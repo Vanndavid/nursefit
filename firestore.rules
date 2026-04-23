@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_-]+$');
+    }
+
+    // Validation for User entity
+    function isValidUser(data, userId) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt']) &&
+             data.keys().size() <= 4 &&
+             data.uid == userId &&
+             data.email is string &&
+             data.createdAt == request.time &&
+             (data.get('name', '') is string);
+    }
+    
+    // Validation for DailyLog entity
+    function isValidDailyLogCreate(data, userId) {
+      return data.keys().hasAll(['userId', 'date', 'shiftType', 'waterLiters', 'createdAt', 'updatedAt']) &&
+             data.userId == userId &&
+             data.date is string && data.date.size() == 10 &&
+             data.shiftType is string && data.shiftType.size() <= 20 &&
+             data.waterLiters is number &&
+             data.createdAt == request.time &&
+             data.updatedAt == request.time;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUser(incoming(), userId);
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().uid == existing().uid &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['name']);
+
+      match /dailyLogs/{logId} {
+        allow get, list: if isOwner(userId) && isValidId(userId) && isValidId(logId);
+        allow create: if isOwner(userId) && isValidId(userId) && isValidId(logId) && isValidDailyLogCreate(incoming(), userId);
+        allow update: if isOwner(userId) && 
+                         isValidId(userId) && isValidId(logId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt == request.time &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['shiftType', 'waterLiters', 'mealsCompleted', 'workoutCompleted', 'supplementsCompleted', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(logId);
+      }
+    }
+  }
+}
