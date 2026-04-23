@@ -5,8 +5,10 @@ import { LogOut, Droplet, Plus, Minus, ArrowLeft, ArrowRight, Pill, Dumbbell, Ut
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './components/ui/card';
 import { Progress } from './components/ui/progress';
+import { Checkbox } from './components/ui/checkbox';
 import { getDailyLog, createOrUpdateDailyLog, DailyLog } from './lib/data';
 import { SHIFT_SCHEDULES, WORKOUT_PLAN } from './lib/constants';
+import { AIRecipeGenerator } from './components/AIRecipeGenerator';
 
 interface DashboardProps {
   user: User;
@@ -214,30 +216,34 @@ export default function Dashboard({ user, logout }: DashboardProps) {
 
         {/* Context Content: Prep Details OR Workout Details */}
         {isPrepDay ? (
-          <Card className="rounded-[32px] border border-[#E5E5DF] shadow-sm bg-white overflow-hidden">
-            <CardHeader className="pb-4 pt-6">
-              <CardTitle className="text-xl font-serif italic text-[#3D3D2D]">Meal Prep Checklist</CardTitle>
-              <CardDescription className="opacity-70 text-[#3D3D2D] text-sm mt-1">Setup your week for success.</CardDescription>
-            </CardHeader>
-            <CardContent className="pb-6">
-              <div className="space-y-3 text-sm text-[#3D3D2D]">
-                {SHIFT_SCHEDULES.off.prepTools?.map((tool, i) => {
-                  const isChecked = prepChecked.includes(i);
-                  return (
-                    <div key={i} 
-                         className={`flex items-center gap-4 p-4 rounded-3xl border transition-colors cursor-pointer ${isChecked ? 'bg-[#E5E5DF] border-[#D1D1C7] opacity-70' : 'bg-[#FAF9F6] border-[#E5E5DF]'}`}
-                         onClick={() => setPrepChecked(prev => isChecked ? prev.filter(x => x !== i) : [...prev, i])}
-                    >
-                      <div className="mt-0.5 relative flex-shrink-0">
-                        {isChecked ? <div className="w-5 h-5 rounded-full border border-[#5A5A40] bg-[#5A5A40] flex items-center justify-center text-[10px] text-white italic pb-[1px]">✓</div> : <div className="w-5 h-5 rounded-full border-2 border-[#D1D1C7]" />}
+          <>
+            <Card className="rounded-[32px] border border-[#E5E5DF] shadow-sm bg-white overflow-hidden">
+              <CardHeader className="pb-4 pt-6">
+                <CardTitle className="text-xl font-serif italic text-[#3D3D2D]">Meal Prep Checklist</CardTitle>
+                <CardDescription className="opacity-70 text-[#3D3D2D] text-sm mt-1">Setup your week for success.</CardDescription>
+              </CardHeader>
+              <CardContent className="pb-6">
+                <div className="space-y-3 text-sm text-[#3D3D2D]">
+                  {SHIFT_SCHEDULES.off.prepTools?.map((tool, i) => {
+                    const isChecked = prepChecked.includes(i);
+                    return (
+                      <div key={i} 
+                           className={`flex items-center gap-4 p-4 rounded-3xl border transition-colors cursor-pointer ${isChecked ? 'bg-[#E5E5DF] border-[#D1D1C7] opacity-70' : 'bg-[#FAF9F6] border-[#E5E5DF]'}`}
+                           onClick={() => setPrepChecked(prev => isChecked ? prev.filter(x => x !== i) : [...prev, i])}
+                      >
+                        <div className="mt-0.5 relative flex-shrink-0">
+                          {isChecked ? <div className="w-5 h-5 rounded-full border border-[#5A5A40] bg-[#5A5A40] flex items-center justify-center text-[10px] text-white italic pb-[1px]">✓</div> : <div className="w-5 h-5 rounded-full border-2 border-[#D1D1C7]" />}
+                        </div>
+                        <span className="font-medium leading-relaxed">{tool}</span>
                       </div>
-                      <span className="font-medium leading-relaxed">{tool}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            <AIRecipeGenerator />
+          </>
         ) : (
           <Card className="rounded-[32px] border border-[#E5E5DF] shadow-sm bg-white overflow-hidden">
             <CardHeader className="pb-4 pt-6">
