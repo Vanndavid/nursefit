@@ -5,8 +5,6 @@ import { LogOut, Droplet, Plus, Minus, ArrowLeft, ArrowRight, Pill, Dumbbell, Ut
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './components/ui/card';
 import { Progress } from './components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
-import { Checkbox } from './components/ui/checkbox';
 import { getDailyLog, createOrUpdateDailyLog, DailyLog } from './lib/data';
 import { SHIFT_SCHEDULES, WORKOUT_PLAN } from './lib/constants';
 
@@ -19,19 +17,14 @@ export default function Dashboard({ user, logout }: DashboardProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [log, setLog] = useState<DailyLog | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>('workout');
+  const [prepChecked, setPrepChecked] = useState<number[]>([]);
 
   const dateStr = format(currentDate, 'yyyy-MM-dd');
 
   useEffect(() => {
     loadDailyData();
+    setPrepChecked([]);
   }, [dateStr]);
-
-  useEffect(() => {
-    if (log) {
-      setActiveTab(log.shiftType === 'off' ? 'prep' : 'workout');
-    }
-  }, [log?.shiftType]);
 
   const loadDailyData = async () => {
     setLoading(true);
@@ -46,6 +39,12 @@ export default function Dashboard({ user, logout }: DashboardProps) {
 
   const shiftData = log ? SHIFT_SCHEDULES[log.shiftType as keyof typeof SHIFT_SCHEDULES] : null;
   const isPrepDay = log?.shiftType === 'off';
+
+  const mealBitmask = log?.mealsCompleted || 0;
+  let completedMealsCount = 0;
+  for (let i = 0; i < 10; i++) {
+    if ((mealBitmask & (1 << i)) !== 0) completedMealsCount++;
+  }
 
   const updateLog = async (field: keyof DailyLog, value: any) => {
     if (!log) return;
@@ -182,19 +181,19 @@ export default function Dashboard({ user, logout }: DashboardProps) {
             <div className="mb-6 bg-[#FAF9F6] p-4 rounded-3xl border border-[#D1D1C7]">
               <div className="flex justify-between items-end mb-3">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]">Completed Meals</span>
-                <span className="text-xl italic font-serif leading-none">{log.mealsCompleted}/{shiftData?.meals.length}</span>
+                <span className="text-xl italic font-serif leading-none">{completedMealsCount}/{shiftData?.meals.length}</span>
               </div>
-              <Progress value={((log.mealsCompleted || 0) / (shiftData?.meals.length || 4)) * 100} className="rounded-full h-1.5 bg-[#D1D1C7] [&>div]:bg-[#5A5A40]" />
+              <Progress value={(completedMealsCount / (shiftData?.meals.length || 4)) * 100} className="rounded-full h-1.5 bg-[#D1D1C7] [&>div]:bg-[#5A5A40]" />
             </div>
 
             <div className="space-y-3">
               {shiftData?.meals.map((meal: any, idx: number) => {
-                const complete = log.mealsCompleted > idx;
+                const complete = (mealBitmask & (1 << idx)) !== 0;
                 return (
                   <div key={meal.id} 
                     className={`flex items-start gap-4 p-4 rounded-3xl border transition-colors cursor-pointer ${complete ? 'bg-[#E5E5DF] border-[#D1D1C7] opacity-70' : 'bg-white border-[#E5E5DF] shadow-sm'}`}
                     onClick={() => {
-                        const nextCount = complete ? idx : idx + 1;
+                        const nextCount = complete ? (mealBitmask & ~(1 << idx)) : (mealBitmask | (1 << idx));
                         updateLog('mealsCompleted', nextCount);
                     }}
                   >
@@ -213,49 +212,50 @@ export default function Dashboard({ user, logout }: DashboardProps) {
           </CardContent>
         </Card>
 
-        {/* Tabbed Content: Prep Details / Workout Details */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 rounded-2xl bg-[#FAF9F6] p-1.5 border border-[#D1D1C7]">
-            <TabsTrigger className="rounded-xl data-[state=active]:bg-[#5A5A40] data-[state=active]:text-white shadow-none text-sm py-2 font-semibold transition-colors text-[#5A5A40]" value="workout">Workout Plan</TabsTrigger>
-            <TabsTrigger className="rounded-xl data-[state=active]:bg-[#5A5A40] data-[state=active]:text-white shadow-none text-sm py-2 font-semibold transition-colors text-[#5A5A40]" value="prep">Sunday Prep</TabsTrigger>
-          </TabsList>
-          <TabsContent value="workout" className="mt-6">
-             <Card className="rounded-[32px] border border-[#E5E5DF] shadow-sm bg-white overflow-hidden">
-                <CardHeader className="pb-4 pt-6">
-                  <CardTitle className="text-xl font-serif italic text-[#3D3D2D]">Full Body Routine</CardTitle>
-                  <CardDescription className="opacity-70 text-[#3D3D2D] text-sm mt-1">Focus on progressive overload. 3 sets of 8-12 reps.</CardDescription>
-                </CardHeader>
-                <CardContent className="pb-6">
-                  <ul className="space-y-4 text-sm text-[#3D3D2D] font-medium">
-                    {WORKOUT_PLAN.map((exercise, i) => (
-                      <li key={i} className="flex items-center gap-3">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#5A5A40] flex-shrink-0" />
-                        <span>{exercise}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-             </Card>
-          </TabsContent>
-          <TabsContent value="prep" className="mt-6">
-            <Card className="rounded-[32px] border border-[#E5E5DF] shadow-sm bg-white overflow-hidden">
-                <CardHeader className="pb-4 pt-6">
-                  <CardTitle className="text-xl font-serif italic text-[#3D3D2D]">Meal Prep Checklist</CardTitle>
-                  <CardDescription className="opacity-70 text-[#3D3D2D] text-sm mt-1">Setup your week for success.</CardDescription>
-                </CardHeader>
-                <CardContent className="pb-6">
-                  <div className="space-y-2 text-sm text-[#3D3D2D]">
-                    {SHIFT_SCHEDULES.off.prepTools?.map((tool, i) => (
-                      <label key={i} className="flex items-center gap-3 p-3 hover:bg-[#FAF9F6] rounded-2xl cursor-pointer">
-                        <Checkbox className="text-[#5A5A40] border-[#D1D1C7] data-[state=checked]:bg-[#5A5A40]" />
-                        <span className="font-medium leading-relaxed">{tool}</span>
-                      </label>
-                    ))}
-                  </div>
-                </CardContent>
-             </Card>
-          </TabsContent>
-        </Tabs>
+        {/* Context Content: Prep Details OR Workout Details */}
+        {isPrepDay ? (
+          <Card className="rounded-[32px] border border-[#E5E5DF] shadow-sm bg-white overflow-hidden">
+            <CardHeader className="pb-4 pt-6">
+              <CardTitle className="text-xl font-serif italic text-[#3D3D2D]">Meal Prep Checklist</CardTitle>
+              <CardDescription className="opacity-70 text-[#3D3D2D] text-sm mt-1">Setup your week for success.</CardDescription>
+            </CardHeader>
+            <CardContent className="pb-6">
+              <div className="space-y-3 text-sm text-[#3D3D2D]">
+                {SHIFT_SCHEDULES.off.prepTools?.map((tool, i) => {
+                  const isChecked = prepChecked.includes(i);
+                  return (
+                    <div key={i} 
+                         className={`flex items-center gap-4 p-4 rounded-3xl border transition-colors cursor-pointer ${isChecked ? 'bg-[#E5E5DF] border-[#D1D1C7] opacity-70' : 'bg-[#FAF9F6] border-[#E5E5DF]'}`}
+                         onClick={() => setPrepChecked(prev => isChecked ? prev.filter(x => x !== i) : [...prev, i])}
+                    >
+                      <div className="mt-0.5 relative flex-shrink-0">
+                        {isChecked ? <div className="w-5 h-5 rounded-full border border-[#5A5A40] bg-[#5A5A40] flex items-center justify-center text-[10px] text-white italic pb-[1px]">✓</div> : <div className="w-5 h-5 rounded-full border-2 border-[#D1D1C7]" />}
+                      </div>
+                      <span className="font-medium leading-relaxed">{tool}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="rounded-[32px] border border-[#E5E5DF] shadow-sm bg-white overflow-hidden">
+            <CardHeader className="pb-4 pt-6">
+              <CardTitle className="text-xl font-serif italic text-[#3D3D2D]">Full Body Routine</CardTitle>
+              <CardDescription className="opacity-70 text-[#3D3D2D] text-sm mt-1">Focus on progressive overload. 3 sets of 8-12 reps.</CardDescription>
+            </CardHeader>
+            <CardContent className="pb-6">
+              <ul className="space-y-3 text-sm text-[#3D3D2D] font-medium p-6 bg-[#FAF9F6] rounded-3xl border border-[#E5E5DF]">
+                {WORKOUT_PLAN.map((exercise, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <span className="w-2 h-2 rounded-full bg-[#5A5A40] flex-shrink-0 opacity-80" />
+                    <span className="leading-relaxed">{exercise}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
       </main>
     </div>
