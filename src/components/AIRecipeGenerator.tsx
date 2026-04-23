@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Checkbox } from "./ui/Checkbox";
-import { Button } from "./ui/Button";
+import { Checkbox } from "./ui/checkbox";
+import { Button } from "./ui/button";
 import { Utensils, ChefHat, Sparkles } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/Card";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 import Markdown from "react-markdown";
 import { GoogleGenAI } from "@google/genai";
 
