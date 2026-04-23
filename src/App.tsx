@@ -4,8 +4,8 @@ import { auth, loginWithGoogle, logoutUser } from './lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { ensureUserExists } from './lib/data';
 import Dashboard from './Dashboard';
-import { Button } from './components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
+import { Button } from './components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/Card';
 import { CalendarHeart, Activity } from 'lucide-react';
 
 function Login() {
