@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
 import { format } from 'date-fns';
-import { LogOut, Droplet, Plus, Minus, ArrowLeft, ArrowRight, Pill, Dumbbell, Utensils, CheckCircle2 } from 'lucide-react';
+import { LogOut, Droplet, Plus, Minus, ArrowLeft, ArrowRight, Pill, Dumbbell, Utensils, Crown } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './components/ui/card';
 import { Progress } from './components/ui/progress';
@@ -69,7 +69,13 @@ export default function Dashboard({ user, logout }: DashboardProps) {
       <header className="bg-[#F5F5F0] border-b border-[#D1D1C7] sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-6 md:px-10 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-serif italic text-[#5A5A40]">NurseFit</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-serif italic text-[#5A5A40]">NurseFit Premium</h1>
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#D1D1C7] bg-[#FAF9F6] px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]">
+                <Crown size={12} />
+                VIP
+              </span>
+            </div>
             <p className="text-[10px] tracking-widest uppercase opacity-70 font-bold">{user.displayName}</p>
           </div>
           <Button variant="ghost" size="icon" onClick={logout} className="text-[#3D3D2D] hover:bg-[#E5E5DF] rounded-full h-10 w-10">
