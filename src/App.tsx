@@ -16,12 +16,12 @@ function Login() {
           <div className="mx-auto w-16 h-16 bg-[#FAF9F6] border border-[#D1D1C7] text-[#5A5A40] rounded-full flex items-center justify-center mb-4">
             <CalendarHeart size={32} strokeWidth={1.5} />
           </div>
-          <CardTitle className="text-3xl font-serif italic text-[#5A5A40]">NurseFit</CardTitle>
-          <CardDescription className="text-xs uppercase tracking-widest font-bold opacity-50 mt-2">Lifestyle Planner</CardDescription>
+          <CardTitle className="text-3xl font-serif italic text-[#5A5A40]">NurseFit Premium</CardTitle>
+          <CardDescription className="text-xs uppercase tracking-widest font-bold opacity-50 mt-2">Concierge Lifestyle Planner</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 pb-8">
           <p className="text-[13px] leading-relaxed opacity-70 text-center mb-4 px-4 font-medium">
-            Sign in to track your meals, hydration, shift schedule, and daily workouts.
+            Sign in to unlock your premium nutrition, hydration, shift, and training dashboard.
           </p>
           <Button onClick={() => loginWithGoogle()} className="w-full h-12 text-sm uppercase tracking-wide bg-[#5A5A40] hover:bg-[#3D3D2D] text-white rounded-full transition-colors">
             Sign in with Google
@@ -66,4 +66,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
